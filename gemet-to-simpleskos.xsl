@@ -85,12 +85,12 @@ managed by GeoNetwork opensource.
                                 <xsl:value-of select="skos:prefLabel"/>
                             </xsl:element>
                         </xsl:if>
-                        <xsl:if test="normalize-space(skos:definition)!=''">
-                            <xsl:element name="skos:definition">
+                        <xsl:if test="normalize-space(skos:definition)!='' or normalize-space(skos:scopeNote)!=''">
+                            <xsl:element name="skos:scopeNote">
                                 <xsl:attribute name="xml:lang">
                                     <xsl:value-of select="$l"/>
                                 </xsl:attribute>
-                                <xsl:value-of select="skos:definition"/>
+                                <xsl:value-of select="skos:definition|skos:scopeNote"/>
                             </xsl:element>
                         </xsl:if>
                     </xsl:for-each>
