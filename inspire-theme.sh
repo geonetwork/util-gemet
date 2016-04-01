@@ -1,5 +1,5 @@
 #!/bin/sh
-export GEONETWORK_HOME=../../Geonetwork-2.5/trunk/web/geonetwork
+export GEONETWORK_HOME=../develop/web/target/geonetwork
 export CLASSPATH=.:$GEONETWORK_HOME/WEB-INF/lib/xml-apis-1.3.04.jar:$GEONETWORK_HOME/WEB-INF/lib/xercesImpl-2.7.1.jar:$GEONETWORK_HOME/WEB-INF/lib/xalan-2.7.1.jar:$GEONETWORK_HOME/WEB-INF/lib/serializer-2.7.1.jar
 
 echo "Downloading INSPIRE theme thesaurus:"

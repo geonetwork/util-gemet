@@ -1,6 +1,6 @@
 #!/bin/sh
-export GEONETWORK_HOME=../../Geonetwork-2.5/trunk/web/geonetwork
-export CLASSPATH=.:$GEONETWORK_HOME/WEB-INF/lib/xml-apis-1.3.04.jar:$GEONETWORK_HOME/WEB-INF/lib/xercesImpl-2.7.1.jar:$GEONETWORK_HOME/WEB-INF/lib/xalan-2.7.1.jar:$GEONETWORK_HOME/WEB-INF/lib/serializer-2.7.1.jar
+export GEONETWORK_HOME=../develop/web/target/geonetwork
+export CLASSPATH=.:$GEONETWORK_HOME/WEB-INF/lib/saxon-9.1.0.8b-patch.jar
 
 if [ $1 ]
 then
@@ -11,23 +11,27 @@ then
     wget http://www.eionet.europa.eu/gemet/gemet-skoscore.rdf
     echo "  * langague files:"
     for locale in $*; do
+        echo "  * groups ..."
+        wget --output-document=gemet-groups-$locale.rdf http://www.eionet.europa.eu/gemet/gemet-groups.rdf?langcode=$locale
         echo "    loading: $locale ..."
         wget --output-document=gemet-definitions-$locale.rdf  http://www.eionet.europa.eu/gemet/gemet-definitions.rdf?langcode=$locale
     done
 
     # Creating list of locales for XSL processing
     export LOCALES="<locales>"
+    export LIST=""
     for locale in $*; do
         export LOCALES=$LOCALES"<locale>"$locale"</locale>"
+        export LIST=$LIST"-"$locale
     done
     export LOCALES=$LOCALES"</locales>"
     echo $LOCALES > locales.xml
 
     echo "Creating thesaurus ..."
-    java org.apache.xalan.xslt.Process -IN gemet-backbone.rdf -XSL gemet-to-simpleskos.xsl -OUT gemet.rdf
+    java net.sf.saxon.Transform -s:gemet-backbone.rdf -xsl:gemet-to-simpleskos.xsl -o:gemet$LIST.rdf
 
     echo "Deploying to thesauri directory:"
-    mv gemet.rdf thesauri/.
+    mv gemet$LIST.rdf thesauri/.
     rm locales.xml
     rm *.rdf
     echo "Done."
