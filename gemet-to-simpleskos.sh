@@ -1,5 +1,5 @@
 #!/bin/sh
-export GEONETWORK_HOME=../develop/web/target/geonetwork
+export GEONETWORK_HOME=../dev/web/target/geonetwork
 export CLASSPATH=.:$GEONETWORK_HOME/WEB-INF/lib/saxon-9.1.0.8b-patch.jar
 
 if [ $1 ]

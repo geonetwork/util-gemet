@@ -18,8 +18,13 @@
   <xsl:variable name="maxStringLength" select="254"/>
   <xsl:variable select="document('locales.xml')" name="locales"/>
   <xsl:variable select="document('gemet-skoscore.rdf')" name="skoscore"/>
+  <xsl:variable name="root" select="/"/>
 
+
+  <!-- Disabled by default as the thesaurus would be too big-->
   <xsl:variable name="withGroup" select="false()"/>
+
+  <xsl:variable name="withThemes" select="true()"/>
 
   <!-- Concept, group and supergroup descriptions -->
   <xsl:variable name="lang">
@@ -37,17 +42,16 @@
     <!-- Scheme -->
     <skos:ConceptScheme rdf:about="http://geonetwork-opensource.org/gemet">
       <dc:title>GEMET</dc:title>
-      <dc:description>GEMET thesaurus for GeoNetwork opensource.
-      </dc:description>
+      <dc:description>GEMET version 4.1.2 thesaurus for GeoNetwork opensource.</dc:description>
       <dc:creator>
         <foaf:Organization>
           <foaf:name>EEA</foaf:name>
         </foaf:Organization>
       </dc:creator>
-      <dc:uri>http://www.eionet.europa.eu/gemet/about?langcode=en</dc:uri>
-      <dc:rights>http://www.eionet.europa.eu/gemet/about?langcode=en</dc:rights>
-      <dcterms:issued>2012-07-20</dcterms:issued>
-      <dcterms:modified>2012-07-20</dcterms:modified>
+      <dc:uri>https://www.eionet.europa.eu/gemet/about?langcode=en</dc:uri>
+      <dc:rights>https://www.eionet.europa.eu/gemet/about?langcode=en</dc:rights>
+      <dcterms:issued>2018-08-16</dcterms:issued>
+      <dcterms:modified>2018-08-16</dcterms:modified>
 
       <xsl:comment>Generated <xsl:value-of select="current-dateTime()"/>.
       </xsl:comment>
@@ -56,12 +60,29 @@
 
       <xsl:choose>
         <xsl:when test="$withGroup">
-          <xsl:for-each
-            select="//skos:Collection[matches(@rdf:about, 'supergroup/[0-9]+$')]">
+          <skos:hasTopConcept
+            rdf:resource="http://www.eionet.europa.eu/gemet/supergroups"/>
+
+          <xsl:for-each-group
+            select="//rdf:Description[matches(@rdf:about, 'supergroup/[0-9]+$')]"
+            group-by="@rdf:about">
             <xsl:sort select="@rdf:about"/>
             <skos:hasTopConcept
               rdf:resource="http://www.eionet.europa.eu/gemet/{@rdf:about}"/>
-          </xsl:for-each>
+          </xsl:for-each-group>
+
+        </xsl:when>
+        <xsl:when test="$withThemes">
+          <skos:hasTopConcept
+            rdf:resource="http://www.eionet.europa.eu/gemet/themes"/>
+
+          <xsl:for-each-group
+            select="//rdf:Description[matches(@rdf:about, 'theme/[0-9]+$')]"
+            group-by="@rdf:about">
+            <xsl:sort select="@rdf:about"/>
+            <skos:hasTopConcept
+              rdf:resource="http://www.eionet.europa.eu/gemet/{@rdf:about}"/>
+          </xsl:for-each-group>
         </xsl:when>
         <xsl:otherwise>
           <!-- All concept with no broader term -->
@@ -87,8 +108,16 @@
         <xsl:comment>GEMET supergroups</xsl:comment>
         <xsl:text>
         </xsl:text>
+
+        <skos:Concept rdf:about="http://www.eionet.europa.eu/gemet/supergroups">
+          <xsl:for-each select="$locales//locale">
+            <skos:prefLabel xml:lang="{{.}}">GEMET super groups</skos:prefLabel>
+          </xsl:for-each>
+        </skos:Concept>
+
+
         <xsl:for-each
-          select="//skos:Collection[matches(@rdf:about, 'supergroup/[0-9]+$')]">
+          select="//rdf:Description[matches(@rdf:about, 'supergroup/[0-9]+$')]">
           <xsl:sort select="@rdf:about"/>
           <xsl:variable name="id" select="@rdf:about"/>
 
@@ -114,14 +143,17 @@
               <skos:narrower
                 rdf:resource="http://www.eionet.europa.eu/gemet/{.}"/>
             </xsl:for-each>
+
+            <skos:broader rdf:resource="http://www.eionet.europa.eu/gemet/supergroups"/>
           </skos:Concept>
         </xsl:for-each>
 
         <xsl:comment>GEMET groups</xsl:comment>
         <xsl:text>
         </xsl:text>
-        <xsl:for-each
-          select="//skos:Collection[matches(@rdf:about, 'group/[0-9]+$')]">
+        <xsl:for-each-group
+          select="//rdf:Description[matches(@rdf:about, 'group/[0-9]+$')]"
+          group-by="@rdf:about">
           <xsl:sort select="@rdf:about"/>
           <xsl:variable name="id" select="@rdf:about"/>
 
@@ -143,48 +175,68 @@
 
             <!-- Search groups -->
             <xsl:for-each
-              select="//skos:Collection[@rdf:about = $id]/gemet:subGroupOf/rdf:Description/@rdf:about">
+              select="//rdf:Description[@rdf:about = $id]/gemet:subGroupOf/rdf:Description/@rdf:about">
               <skos:broader
                 rdf:resource="http://www.eionet.europa.eu/gemet/{.}"/>
             </xsl:for-each>
-            <!-- Search theme -->
+            <!-- Search term -->
             <xsl:for-each
               select="//gemet:group/rdf:Description[@rdf:about = $id]/skos:member/@rdf:resource[starts-with(., 'concept')]">
               <skos:narrower
                 rdf:resource="http://www.eionet.europa.eu/gemet/{.}"/>
             </xsl:for-each>
           </skos:Concept>
-        </xsl:for-each>
+        </xsl:for-each-group>
       </xsl:if>
 
-      <!--<xsl:comment>GEMET themes</xsl:comment>
-      <xsl:for-each select="//skos:Collection[matches(@rdf:about, 'theme/[0-9]+$')]">
-        <xsl:sort select="@rdf:about"/>
-        <xsl:variable name="id" select="@rdf:about"/>
+      <xsl:if test="$withThemes">
+        <xsl:comment>GEMET themes</xsl:comment>
 
-        <skos:Concept rdf:about="http://www.eionet.europa.eu/gemet/{$id}">
-          <xsl:for-each
-                  select="$lang//rdf:Description[@rdf:about = $id]">
-            <xsl:variable name="l" select="../@xml:lang"/>
-
-            <xsl:if
-                    test="normalize-space(rdfs:label) != ''">
-              <xsl:element name="skos:prefLabel">
-                <xsl:attribute name="xml:lang">
-                  <xsl:value-of select="$l"/>
-                </xsl:attribute>
-                <xsl:value-of select="rdfs:label"/>
-              </xsl:element>
-            </xsl:if>
+        <skos:Concept rdf:about="http://www.eionet.europa.eu/gemet/themes">
+          <xsl:for-each select="$locales//locale">
+            <skos:prefLabel xml:lang="{.}">GEMET themes</skos:prefLabel>
           </xsl:for-each>
-
-          <xsl:for-each select="//gemet:subGroupOf/rdf:Description/@rdf:about">
-            <skos:broader rdf:resource="http://www.eionet.europa.eu/gemet/{.}"/>
-          </xsl:for-each>
-
         </skos:Concept>
-      </xsl:for-each>-->
 
+        <xsl:for-each-group
+          select="//rdf:Description[matches(@rdf:about, 'theme/[0-9]+$')]"
+          group-by="@rdf:about">
+          <xsl:sort select="@rdf:about"/>
+          <xsl:variable name="id" select="@rdf:about"/>
+
+          <skos:Concept rdf:about="http://www.eionet.europa.eu/gemet/{$id}">
+            <xsl:for-each
+                    select="$lang//rdf:Description[@rdf:about = $id]">
+              <xsl:variable name="l" select="../@xml:lang"/>
+
+              <xsl:if
+                      test="normalize-space(rdfs:label) != ''">
+                <xsl:element name="skos:prefLabel">
+                  <xsl:attribute name="xml:lang">
+                    <xsl:value-of select="$l"/>
+                  </xsl:attribute>
+                  <xsl:value-of select="rdfs:label"/>
+                </xsl:element>
+              </xsl:if>
+            </xsl:for-each>
+
+            <xsl:if test="$withGroup">
+              <xsl:for-each select="//gemet:subGroupOf/rdf:Description/@rdf:about">
+                <skos:broader rdf:resource="http://www.eionet.europa.eu/gemet/{.}"/>
+              </xsl:for-each>
+            </xsl:if>
+
+            <skos:broader rdf:resource="http://www.eionet.europa.eu/gemet/themes"/>
+
+            <!-- Search term -->
+            <xsl:for-each
+              select="$root//rdf:Description[gemet:theme/rdf:Description/@rdf:about = $id][starts-with(@rdf:about, 'concept')]">
+              <skos:narrower
+                rdf:resource="http://www.eionet.europa.eu/gemet/{@rdf:about}"/>
+            </xsl:for-each>
+          </skos:Concept>
+        </xsl:for-each-group>
+      </xsl:if>
 
       <xsl:comment>GEMET concepts</xsl:comment>
       <xsl:text>
@@ -223,6 +275,13 @@
 
           <xsl:if test="$withGroup">
             <xsl:for-each select="gemet:group/rdf:Description/@rdf:about">
+              <skos:broader
+                rdf:resource="http://www.eionet.europa.eu/gemet/{.}"/>
+            </xsl:for-each>
+          </xsl:if>
+
+          <xsl:if test="$withThemes">
+            <xsl:for-each select="gemet:theme/rdf:Description/@rdf:about">
               <skos:broader
                 rdf:resource="http://www.eionet.europa.eu/gemet/{.}"/>
             </xsl:for-each>
