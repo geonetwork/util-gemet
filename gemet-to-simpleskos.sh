@@ -1,6 +1,16 @@
 #!/bin/sh
-export GEONETWORK_HOME=../dev/web/target/geonetwork
-export CLASSPATH=.:$GEONETWORK_HOME/WEB-INF/lib/saxon-9.1.0.8b-patch.jar
+# export GEONETWORK_HOME=../dev/web/target/geonetwork
+
+export SAXON_PATH=$GEONETWORK_HOME/WEB-INF/lib/saxon-9.1.0.8b-patch.jar
+
+if [ ! -f "$SAXON_PATH" ]; then
+  echo "Saxon could not be found in $SAXON_PATH. Check you have set GEONETWORK_HOME env variable correctly"
+  exit 1
+fi
+
+exit 1
+
+export CLASSPATH=.:$SAXON_PATH
 
 if [ $1 ]
 then
