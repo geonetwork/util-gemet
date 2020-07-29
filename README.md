@@ -7,13 +7,17 @@ format usable in GeoNetwork opensource.
 
 A script is provided to convert GEMET thesaurus https://www.eionet.europa.eu/gemet/
 
+Before running any script create `GEONETWORK_HOME` environment variable pointing the Geonetwork deployment directory: 
 
-Use the following to generate a GEMET SKOS file with many languages:
+```
+export GEONETWORK_HOME=../dev/web/target/geonetwork
+```
+
+Then use the following to generate a GEMET SKOS file with many languages:
+
 ```
 ./gemet-to-simpleskos.sh en fr de nl it
 ```
-
-Note: Update GEONETWORK_HOME variable before running any scripts.
 
 
 ## Thesaurus
