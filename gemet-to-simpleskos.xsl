@@ -14,7 +14,10 @@
 
   <xsl:output method="xml" indent="yes"/>
 
+  <xsl:param name="version" select="''"/>
+
   <xsl:variable name="debug" select="false()"/>
+  <xsl:variable name="date" select="format-date(current-date(), '[Y0001]-[M01]-[D01]')"/>
   <xsl:variable name="maxStringLength" select="254"/>
   <xsl:variable select="document('locales.xml')" name="locales"/>
   <xsl:variable select="document('gemet-skoscore.rdf')" name="skoscore"/>
@@ -42,7 +45,7 @@
     <!-- Scheme -->
     <skos:ConceptScheme rdf:about="http://geonetwork-opensource.org/gemet">
       <dc:title>GEMET</dc:title>
-      <dc:description>GEMET version 4.1.2 thesaurus for GeoNetwork opensource.</dc:description>
+      <dc:description>GEMET version <xsl:value-of select="$version"/> thesaurus for GeoNetwork opensource.</dc:description>
       <dc:creator>
         <foaf:Organization>
           <foaf:name>EEA</foaf:name>
@@ -50,10 +53,9 @@
       </dc:creator>
       <dc:uri>https://www.eionet.europa.eu/gemet/about?langcode=en</dc:uri>
       <dc:rights>https://www.eionet.europa.eu/gemet/about?langcode=en</dc:rights>
-      <dcterms:issued>2018-08-16</dcterms:issued>
-      <dcterms:modified>2018-08-16</dcterms:modified>
-
-      <xsl:comment>Generated <xsl:value-of select="current-dateTime()"/>.
+      <dcterms:issued><xsl:value-of select="$date"/></dcterms:issued>
+      <dcterms:modified><xsl:value-of select="$date"/></dcterms:modified>
+      <xsl:comment>Generated <xsl:value-of select="$date"/>.
       </xsl:comment>
       <xsl:text>
       </xsl:text>
